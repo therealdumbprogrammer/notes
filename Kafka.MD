@@ -1,4 +1,4 @@
-## Unit 1: Introduction to Apache Kafka
+## Introduction to Apache Kafka
 
 ### Overview
 
@@ -17,7 +17,7 @@
 
 ---
 
-## Unit 2: Basic Kafka Operations
+## Basic Kafka Operations
 
 ### Command-Line Tools
 
@@ -55,7 +55,7 @@
 
 ---
 
-## Unit 3: Kafka Producers and Consumers in Java
+## Kafka Producers and Consumers in Java
 
 In this unit, we focus on interacting with Apache Kafka using Java. You'll learn how to write Java applications that produce and consume messages to and from Kafka topics, understand the key components of the Kafka Producer and Consumer APIs, and explore serialization and deserialization techniques, including custom serializers and deserializers. Additionally, we delve into multi-threaded consumers, handling message ordering, and advanced consumer features like `consumer.pause()` and `consumer.resume()`.
 
@@ -511,3 +511,409 @@ public class FileBasedProducer {
     }
 }
 ```
+
+---
+
+## Topics and Partitions
+
+### Topics
+
+- **Definition**: Categories or feed names to which records are published.
+- **Characteristics**:
+  - Multi-subscriber support.
+  - Immutable data.
+
+### Partitions
+
+- **Definition**: A single topic is divided into multiple partitions.
+- **Characteristics**:
+  - Ordered, immutable sequences of records.
+  - Each record has a unique **offset**.
+  - Fundamental unit of parallelism and scalability.
+
+### Why Partitions Matter
+
+- **Scalability**: Distributes data across brokers.
+- **Parallelism**: Enables multiple consumers to read data in parallel.
+- **Ordering Guarantees**: Order is guaranteed within a partition, not across partitions.
+
+**Example**:
+
+```plaintext
+Topic: orders
++-----------------+
+| Partition 0     |
+| Offset: 0, 1, 2 |
++-----------------+
+| Partition 1     |
+| Offset: 0, 1, 2 |
++-----------------+
+| Partition 2     |
+| Offset: 0, 1, 2 |
++-----------------+
+```
+
+---
+
+## 5.2 Replication and Fault Tolerance
+
+### Replication Factors
+
+- **Definition**: Number of copies of each partition across brokers.
+- **Common Practice**: Use a replication factor of **3** in production.
+
+### Leader and Follower Replicas
+
+- **Leader Replica**:
+  - Handles all read and write requests.
+- **Follower Replicas**:
+  - Replicate data from the leader.
+  - Take over if the leader fails.
+
+### In-Sync Replicas (ISR)
+
+- **Definition**: Set of replicas fully caught up with the leader.
+- **Role**:
+  - Only ISR members are eligible for leader election.
+  - Ensure data durability and availability.
+
+**Example**:
+
+```plaintext
+Partition 0 Replicas:
+- Leader: Broker 1
+- Follower: Broker 2
+- Follower: Broker 3
+
+If Broker 1 fails, Broker 2 or Broker 3 becomes the new leader.
+```
+
+---
+
+## 5.3 Understanding the Commit Log
+
+### Commit Log Concept
+
+- **Definition**: An append-only data structure recording every change.
+- **Kafka's Use**:
+  - Each partition is a commit log.
+  - Enables sequential reads and writes.
+
+### Data Retention
+
+- **Configurable Retention**:
+  - Time-based (e.g., 7 days).
+  - Size-based limits.
+- **Log Compaction**:
+  - Removes obsolete records with the same key.
+  - Retains the latest value per key.
+
+### Benefits
+
+- **Performance**: Efficient disk usage.
+- **Reliability**: Immutable logs prevent corruption.
+- **Replayability**: Consumers can reprocess data from any point.
+
+---
+
+## 5.4 Consumer Groups and Load Balancing
+
+### Consumer Groups
+
+- **Definition**: A group of consumers sharing the workload.
+- **Characteristics**:
+  - Each partition is consumed by only one consumer in the group.
+  - Consumers can be in different processes or machines.
+
+### Load Balancing
+
+- **Partition Assignment**:
+  - Kafka distributes partitions among consumers.
+  - Automatic rebalancing upon consumer changes.
+- **Benefits**:
+  - **Scalability**: Add consumers to increase capacity.
+  - **Fault Tolerance**: Redistributes partitions if a consumer fails.
+
+**Example**:
+
+```plaintext
+Topic: orders (6 partitions)
+Consumer Group: order-processors
+Consumers: C1, C2, C3
+
+Partition Assignment:
+- C1: Partitions 0, 1
+- C2: Partitions 2, 3
+- C3: Partitions 4, 5
+
+If C2 fails, partitions 2 and 3 are reassigned to C1 and C3.
+```
+
+---
+
+## 5.5 Offset Management
+
+### Committing Offsets
+
+- **Automatic Offset Commit**:
+  - Controlled by `enable.auto.commit` (default is `true`).
+  - Commits offsets at regular intervals.
+- **Manual Offset Commit**:
+  - Use `commitSync()` or `commitAsync()`.
+  - Provides control over when offsets are committed.
+
+### Delivery Semantics
+
+- **At-Least-Once Delivery**:
+  - Default behavior.
+  - Possible duplicate processing.
+- **Exactly-Once Delivery**:
+  - Requires idempotent producers and transactional APIs.
+  - Ensures each message is processed exactly once.
+
+### Offset Storage
+
+- **Default**: Stored in Kafka's internal `__consumer_offsets` topic.
+- **Custom**: Can be stored externally if needed.
+
+### Offset Management Strategies
+
+#### Automatic Commit
+
+- **Pros**: Simplicity.
+- **Cons**: Less control, risk of message loss or duplication.
+
+#### Manual Commit
+
+- **Synchronous Commit (`commitSync()`)**:
+  - Blocks until the commit is acknowledged.
+- **Asynchronous Commit (`commitAsync()`)**:
+  - Non-blocking, but requires error handling.
+
+**Example**:
+
+```java
+consumer.commitSync(); // Manual synchronous commit after processing records
+```
+
+---
+
+## 5.6 Exactly-Once Semantics in Kafka
+
+### Idempotent Producers
+
+- **Purpose**: Prevent duplicate messages during retries.
+- **Configuration**:
+  - Set `enable.idempotence` to `true`.
+
+### Transactions
+
+- **Purpose**: Atomic writes across multiple partitions and topics.
+- **Usage**:
+  - Begin a transaction.
+  - Send messages.
+  - Commit or abort the transaction.
+
+**Producer Example with Transactions**:
+
+```java
+Properties props = new Properties();
+props.put("transactional.id", "my-transactional-id");
+KafkaProducer<String, String> producer = new KafkaProducer<>(props);
+
+producer.initTransactions();
+producer.beginTransaction();
+// Send messages
+producer.commitTransaction();
+```
+
+### Transactional Consumers
+
+- **Configuration**:
+  - Set `isolation.level` to `read_committed`.
+- **Behavior**:
+  - Consumers only read messages from committed transactions.
+
+---
+
+## 5.7 Kafka's High-Level Architecture
+
+### Components
+
+1. **Producers**: Publish data to topics.
+2. **Consumers**: Subscribe to topics and process data.
+3. **Brokers**: Servers that store and serve data.
+4. **ZooKeeper**: Coordinates brokers (being phased out in newer Kafka versions).
+
+### Data Flow
+
+1. **Producers** send messages to the leader broker of a partition.
+2. **Brokers** replicate data to followers.
+3. **Consumers** read messages from leader brokers.
+
+### Cluster Anatomy
+
+- **Controller Broker**:
+  - Manages partition leadership and broker failures.
+- **Replication**:
+  - Provides fault tolerance.
+- **Rebalancing**:
+  - Redistributes partitions when brokers join or leave.
+
+---
+
+## 5.8 Client Request Routing
+
+### Metadata Fetching
+
+- **Bootstrap Servers**:
+  - Clients connect to one or more brokers specified in `bootstrap.servers` to fetch metadata.
+- **Metadata Includes**:
+  - List of brokers in the cluster.
+  - Topics and their partitions.
+  - The leader broker for each partition.
+  - Replica assignments.
+
+**Process**:
+
+1. **Initial Connection**:
+   - Client connects to any broker in the cluster (bootstrap server).
+2. **Metadata Request**:
+   - Client requests metadata about the cluster.
+3. **Metadata Response**:
+   - Broker responds with the current cluster metadata.
+
+### Direct Communication
+
+- **Leader-Based Communication**:
+  - Clients communicate directly with the leader broker of the partition they need to interact with.
+- **No Multiple Hops**:
+  - There are no intermediary brokers; communication is point-to-point between the client and the leader broker.
+
+**Example**:
+
+- **Producer Workflow**:
+  1. Fetch metadata to determine the leader for the target partition.
+  2. Send produce requests directly to the leader broker.
+
+- **Consumer Workflow**:
+  1. Fetch metadata to identify partition leaders.
+  2. Send fetch requests directly to the appropriate leader brokers.
+
+### Handling Leader Changes
+
+- **Leader Failure Detection**:
+  - If a leader broker becomes unavailable, clients receive errors like `NotLeaderForPartitionException`.
+- **Metadata Refresh**:
+  - Upon encountering such errors, clients request updated metadata.
+- **Automatic Redirection**:
+  - Clients update their internal metadata cache and redirect requests to the new leader broker.
+
+**Illustration**:
+
+```plaintext
+Client (Producer/Consumer)
+     |
+     |-- Initial Metadata Request --> Broker A
+     |<-- Metadata Response ---------|
+     |
+     |-- Direct Request to Leader Broker (e.g., Broker B)
+```
+
+- **Leader Change Scenario**:
+  - If Broker B fails, the client encounters an error.
+  - The client refreshes metadata and learns that Broker C is the new leader.
+  - Subsequent requests are sent directly to Broker C.
+
+### Benefits
+
+- **Efficiency**:
+  - Direct communication reduces latency.
+- **Scalability**:
+  - Clients distribute load across brokers by connecting directly to partition leaders.
+- **Resilience**:
+  - Clients adapt to changes in the cluster automatically.
+
+---
+
+## 5.9 ISR Maintenance and Scenarios
+
+### Maintaining ISR (In-Sync Replicas)
+
+- **Leader Role**:
+  - The leader broker is responsible for tracking and managing the ISR for each partition it leads.
+- **Follower Synchronization**:
+  - Followers replicate data from the leader asynchronously.
+  - They send fetch requests to the leader to get new messages.
+
+### Health Checks and Lag Monitoring
+
+- **Heartbeat Mechanism**:
+  - Followers regularly send heartbeats to the leader to indicate they are alive.
+- **Lag Detection**:
+  - The leader monitors the lag of followers using metrics like `replica.lag.max.messages` and `replica.lag.time.max.ms`.
+- **ISR Updates**:
+  - If a follower falls behind beyond configured thresholds, the leader removes it from the ISR.
+  - When the follower catches up, it is added back to the ISR.
+
+### What Happens When ISR Has Only the Leader
+
+- **Possible Scenario**:
+  - All followers are removed from the ISR due to lag or failures, leaving only the leader.
+- **Implications**:
+  - **Reduced Fault Tolerance**:
+    - If the leader fails, there are no in-sync replicas to take over.
+    - This can lead to data loss or unavailability.
+  - **Data Durability Risk**:
+    - Without replication, messages acknowledged by the leader but not replicated to followers may be lost.
+
+### Is It Possible for ISR to Be Empty?
+
+- **No**:
+  - The ISR always contains at least the leader broker.
+  - An empty ISR would imply no leader, which is not possible in Kafka's design.
+
+### Recovery and Reassignment
+
+- **Leader Failure with ISR Containing Only Leader**:
+  - Kafka cannot elect a new leader from out-of-sync followers.
+  - The partition remains unavailable until:
+    - The original leader recovers.
+    - A follower catches up and joins the ISR.
+
+### Configuration Parameters
+
+- **`replica.lag.time.max.ms`**:
+  - Maximum time a follower can lag before being removed from the ISR.
+- **`min.insync.replicas`**:
+  - Minimum number of replicas that must acknowledge a write for the leader to consider the write successful.
+  - Used in conjunction with producer `acks` setting.
+
+### Ensuring High Availability
+
+- **Best Practices**:
+  - **Set Appropriate Replication Factor**:
+    - Use a replication factor of at least 3.
+  - **Monitor ISR Size**:
+    - Use monitoring tools to alert when ISR size drops.
+  - **Adjust Producer `acks` Setting**:
+    - Use `acks=all` to ensure messages are replicated to all ISR members.
+  - **Configure `min.insync.replicas`**:
+    - Set to a value greater than 1 to prevent writes when insufficient replicas are in sync.
+
+**Example**:
+
+```plaintext
+Partition 0 Replicas:
+- Leader: Broker 1 (in ISR)
+- Follower: Broker 2 (out of ISR)
+- Follower: Broker 3 (out of ISR)
+
+ISR = {Broker 1}
+
+If Broker 1 fails:
+- No in-sync replicas are available.
+- Partition 0 becomes unavailable until Broker 1 recovers or followers catch up.
+```
+
+---
