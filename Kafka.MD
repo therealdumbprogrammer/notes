@@ -1,7 +1,3 @@
-Certainly! Here's the updated, slightly trimmed-down Table of Contents for your README file:
-
----
-
 # Table of Contents
 
 - [Introduction to Apache Kafka](#introduction-to-apache-kafka)
@@ -79,6 +75,13 @@ Certainly! Here's the updated, slightly trimmed-down Table of Contents for your 
   - [6.5 Advanced Configuration Settings](#65-advanced-configuration-settings)
   - [6.6 Monitoring and Metrics](#66-monitoring-and-metrics)
 
+- [Advanced Consumer Concepts](#advanced-consumer-concepts)
+  - [7.1 Consumer Rebalancing and Partition Assignment Strategies](#71-consumer-rebalancing-and-partition-assignment-strategies)
+  - [7.2 Manual Partition Assignment](#72-manual-partition-assignment)
+  - [7.3 Rebalancing Listeners](#73-rebalancing-listeners)
+  - [7.4 Offset Management in Depth](#74-offset-management-in-depth)
+  - [7.5 Consuming Records with Timestamps](#75-consuming-records-with-timestamps)
+  - [7.6 Best Practices for Consumer Configuration](#76-best-practices-for-consumer-configuration)
 
 ---
 
@@ -1297,5 +1300,357 @@ props.put("buffer.memory", 67108864);    // 64 MB buffer memory
 
 - **JMX (Java Management Extensions)**
 - **Monitoring Tools**: Kafka Manager, Prometheus, Grafana, etc.
+
+---
+
+# Advanced Consumer Concepts
+
+## 7.1 Consumer Rebalancing and Partition Assignment Strategies
+
+### Consumer Rebalancing
+
+- **Definition**: The process by which Kafka reassigns partitions to consumers within a consumer group.
+- **Triggers**:
+  - A new consumer joins the group.
+  - An existing consumer leaves the group.
+  - Topic metadata changes (e.g., partitions added).
+
+### Partition Assignment Strategies
+
+Kafka provides several strategies for partition assignment:
+
+1. **Range Assignor** (Default)
+   - Assigns partitions in contiguous ranges.
+   - May lead to uneven distribution if partitions are not divisible by the number of consumers.
+
+2. **RoundRobin Assignor**
+   - Distributes partitions evenly in a round-robin fashion.
+   - Provides a more balanced assignment.
+
+3. **Sticky Assignor**
+   - Attempts to minimize partition movement during rebalances.
+   - Keeps the same partitions assigned to consumers as much as possible.
+
+4. **Cooperative Sticky Assignor** (Kafka 2.4 and Later)
+   - Introduces incremental cooperative rebalancing.
+   - Minimizes downtime and avoids stopping the entire consumer group during rebalances.
+
+**Configuring Assignment Strategy**:
+
+```java
+Properties props = new Properties();
+props.put("partition.assignment.strategy", "org.apache.kafka.clients.consumer.StickyAssignor");
+```
+
+---
+
+## 7.2 Manual Partition Assignment
+
+### When to Use Manual Assignment
+
+- **Use Cases**:
+  - Consuming specific partitions.
+  - Testing and debugging.
+  - Custom load balancing.
+
+### Assigning Partitions Manually
+
+- **Using `assign()` Method**:
+
+  ```java
+  List<TopicPartition> partitions = Arrays.asList(
+      new TopicPartition("my-topic", 0),
+      new TopicPartition("my-topic", 1)
+  );
+  consumer.assign(partitions);
+  ```
+
+### Considerations
+
+- **No Rebalancing**: Consumers with manual assignment do not participate in group rebalancing.
+- **Offset Management**: You may need to manage offsets manually.
+- **Fault Tolerance**: Partitions are not reassigned if a consumer fails.
+
+---
+
+## 7.3 Rebalancing Listeners
+
+### Purpose
+
+- **Monitor Rebalance Events**: React to partition assignment changes.
+- **Use Cases**:
+  - Commit offsets before partitions are revoked.
+  - Initialize resources after partitions are assigned.
+
+### Implementing a Rebalance Listener
+
+- **Implement `ConsumerRebalanceListener` Interface**:
+
+  ```java
+  public class RebalanceListener implements ConsumerRebalanceListener {
+      private final KafkaConsumer<String, String> consumer;
+
+      public RebalanceListener(KafkaConsumer<String, String> consumer) {
+          this.consumer = consumer;
+      }
+
+      @Override
+      public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+          // Commit offsets before partition revocation
+          consumer.commitSync();
+          System.out.println("Partitions revoked: " + partitions);
+      }
+
+      @Override
+      public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+          // Reset state or initialize resources
+          System.out.println("Partitions assigned: " + partitions);
+      }
+  }
+  ```
+
+- **Registering the Listener**:
+
+  ```java
+  consumer.subscribe(Arrays.asList("my-topic"), new RebalanceListener(consumer));
+  ```
+
+### Best Practices
+
+- **Commit Offsets in `onPartitionsRevoked()`**: Ensures processed messages are not reprocessed.
+- **Avoid Lengthy Operations**: Keep listener methods efficient to avoid delaying rebalances.
+
+---
+
+## 7.4 Offset Management in Depth
+
+### Understanding Consumer Offsets
+
+- **Offset**: The position of a consumer in a partition.
+- **Importance**: Determines where the consumer resumes after a restart.
+
+### Offset Reset Policies
+
+- **Configuration**: `auto.offset.reset`
+- **Options**:
+  - **`earliest`**: Start from the earliest available offset.
+  - **`latest`** (default): Start from the latest offset.
+  - **`none`**: Throw an exception if no previous offset is found.
+
+### Manual Offset Control
+
+#### Seeking to Specific Offsets
+
+- **Example**:
+
+  ```java
+  TopicPartition partition = new TopicPartition("my-topic", 0);
+  consumer.assign(Arrays.asList(partition));
+  consumer.seek(partition, 100); // Start from offset 100
+  ```
+
+#### Seeking to Beginning or End
+
+- **Seek to Beginning**:
+
+  ```java
+  consumer.seekToBeginning(consumer.assignment());
+  ```
+
+- **Seek to End**:
+
+  ```java
+  consumer.seekToEnd(consumer.assignment());
+  ```
+
+### Committing Offsets
+
+- **Synchronous Commit**:
+
+  ```java
+  consumer.commitSync(); // Blocks until the commit is acknowledged
+  ```
+
+- **Asynchronous Commit with Callback**:
+
+  ```java
+  consumer.commitAsync((offsets, exception) -> {
+      if (exception != null) {
+          System.err.printf("Commit failed for offsets %s%n", offsets, exception);
+      }
+  });
+  ```
+
+### Handling Rebalance and Offset Commit
+
+- **Potential Issue**: Uncommitted offsets may lead to message duplication during rebalances.
+- **Solution**: Use `ConsumerRebalanceListener` to commit offsets before partitions are revoked.
+
+---
+
+## 7.5 Consuming Records with Timestamps
+
+### Accessing Timestamps
+
+- **Retrieve Record Timestamp**:
+
+  ```java
+  long timestamp = record.timestamp();
+  ```
+
+### Seeking to a Specific Timestamp
+
+#### Use Case
+
+- **Start Consumption from a Specific Time**: Useful for time-based processing.
+
+#### Implementation Steps
+
+1. **Assign Partitions**:
+
+   ```java
+   List<TopicPartition> partitions = new ArrayList<>();
+   for (PartitionInfo partitionInfo : consumer.partitionsFor("my-topic")) {
+       partitions.add(new TopicPartition(partitionInfo.topic(), partitionInfo.partition()));
+   }
+   consumer.assign(partitions);
+   ```
+
+2. **Define Timestamp to Seek To**:
+
+   ```java
+   long timestampToSearch = System.currentTimeMillis() - 24 * 60 * 60 * 1000; // 24 hours ago
+   ```
+
+3. **Fetch Offsets for Timestamps**:
+
+   ```java
+   Map<TopicPartition, Long> timestampsToSearch = new HashMap<>();
+   for (TopicPartition partition : partitions) {
+       timestampsToSearch.put(partition, timestampToSearch);
+   }
+   Map<TopicPartition, OffsetAndTimestamp> offsetsForTimes = consumer.offsetsForTimes(timestampsToSearch);
+   ```
+
+4. **Seek to Retrieved Offsets**:
+
+   ```java
+   for (TopicPartition partition : partitions) {
+       OffsetAndTimestamp offsetAndTimestamp = offsetsForTimes.get(partition);
+       if (offsetAndTimestamp != null) {
+           consumer.seek(partition, offsetAndTimestamp.offset());
+       } else {
+           // If no offset is found, seek to beginning
+           consumer.seekToBeginning(Arrays.asList(partition));
+       }
+   }
+   ```
+
+---
+
+## 7.6 Best Practices for Consumer Configuration
+
+### Configuring Fetch Size
+
+- **`fetch.min.bytes`**: Minimum amount of data the broker should return for a fetch request.
+
+  ```java
+  props.put("fetch.min.bytes", 50000); // Wait for at least 50 KB of data
+  ```
+
+- **`fetch.max.wait.ms`**: Maximum time the broker will wait before returning data.
+
+  ```java
+  props.put("fetch.max.wait.ms", 500); // Wait up to 500 ms
+  ```
+
+### Controlling Session Timeouts
+
+- **`session.timeout.ms`**: Time the consumer can be inactive before it's considered dead.
+
+  ```java
+  props.put("session.timeout.ms", 10000); // 10 seconds
+  ```
+
+- **`heartbeat.interval.ms`**: Frequency at which the consumer sends heartbeats to the broker.
+
+  ```java
+  props.put("heartbeat.interval.ms", 3000); // 3 seconds
+  ```
+
+### Maximizing Consumer Throughput
+
+- **Increase `max.poll.records`**: Number of records returned in a single `poll()` call.
+
+  ```java
+  props.put("max.poll.records", 1000);
+  ```
+
+- **Adjust `max.partition.fetch.bytes`**: Maximum data per partition per fetch request.
+
+  ```java
+  props.put("max.partition.fetch.bytes", 1048576); // 1 MB
+  ```
+
+### Avoiding Rebalance Issues
+
+- **Manage `max.poll.interval.ms`**: Maximum delay between `poll()` calls.
+
+  ```java
+  props.put("max.poll.interval.ms", 300000); // 5 minutes
+  ```
+
+- **Best Practice**: Ensure processing time is less than `max.poll.interval.ms` or call `poll()` more frequently.
+
+### Error Handling
+
+- **Handle Exceptions in Poll Loop**:
+
+  ```java
+  try {
+      while (true) {
+          ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+          // Process records
+      }
+  } catch (Exception e) {
+      // Handle exception
+      e.printStackTrace();
+  } finally {
+      consumer.close();
+  }
+  ```
+
+- **Use `commitSync()` with Retry Logic**:
+
+  ```java
+  boolean success = false;
+  int retries = 0;
+  while (!success && retries < 3) {
+      try {
+          consumer.commitSync();
+          success = true;
+      } catch (CommitFailedException e) {
+          retries++;
+          // Log and handle retry
+      }
+  }
+  ```
+
+### Monitoring and Metrics
+
+- **Consumer Metrics**:
+  - `records-consumed-rate`
+  - `bytes-consumed-rate`
+  - `fetch-latency-avg`
+  - `records-lag-max`
+
+- **Accessing Metrics**:
+
+  ```java
+  Map<MetricName, ? extends Metric> metrics = consumer.metrics();
+  for (Map.Entry<MetricName, ? extends Metric> entry : metrics.entrySet()) {
+      System.out.printf("%s: %f%n", entry.getKey().name(), entry.getValue().metricValue());
+  }
+  ```
 
 ---
