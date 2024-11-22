@@ -1,71 +1,65 @@
 # Table of Contents
 
-- [Introduction to Apache Kafka](#introduction-to-apache-kafka)
-  - [Overview](#overview)
+- [Unit 1: Introduction to Apache Kafka](#unit-1-introduction-to-apache-kafka)
+  - [1.1 Overview](#11-overview)
 
-- [Basic Kafka Operations](#basic-kafka-operations)
-  - [Command-Line Tools](#command-line-tools)
-  - [Message Formats](#message-formats)
+- [Unit 2: Basic Kafka Operations](#unit-2-basic-kafka-operations)
+  - [2.1 Command-Line Tools](#21-command-line-tools)
+  - [2.2 Message Formats](#22-message-formats)
 
-- [Kafka Producers and Consumers in Java](#kafka-producers-and-consumers-in-java)
-  - [4.1 Setting Up a Java Project with Kafka Dependencies](#41-setting-up-a-java-project-with-kafka-dependencies)
-  - [4.2 Writing a Simple Producer](#42-writing-a-simple-producer)
-  - [4.3 Writing a Simple Consumer](#43-writing-a-simple-consumer)
-  - [4.4 Serialization and Deserialization](#44-serialization-and-deserialization)
-  - [4.5 Multi-Threaded Consumers](#45-multi-threaded-consumers)
-  - [4.6 Handling Message Ordering](#46-handling-message-ordering)
-  - [4.7 Pausing and Resuming Consumption](#47-pausing-and-resuming-consumption)
-  - [4.8 File-Based Producer](#48-file-based-producer)
+- [Unit 3: Kafka Producers and Consumers in Java](#unit-3-kafka-producers-and-consumers-in-java)
+  - [3.1 Setting Up a Java Project with Kafka Dependencies](#31-setting-up-a-java-project-with-kafka-dependencies)
+  - [3.2 Writing a Simple Producer](#32-writing-a-simple-producer)
+  - [3.3 Writing a Simple Consumer](#33-writing-a-simple-consumer)
+  - [3.4 Serialization and Deserialization](#34-serialization-and-deserialization)
+  - [3.5 Multi-Threaded Consumers](#35-multi-threaded-consumers)
+  - [3.6 Handling Message Ordering](#36-handling-message-ordering)
+  - [3.7 Pausing and Resuming Consumption](#37-pausing-and-resuming-consumption)
+  - [3.8 File-Based Producer](#38-file-based-producer)
 
-- [Topics and Partitions](#topics-and-partitions)
-  - [Topics](#topics)
-  - [Partitions](#partitions)
-  - [Why Partitions Matter](#why-partitions-matter)
+- [Unit 4: Topics and Partitions](#unit-4-topics-and-partitions)
+  - [4.1 Topics](#41-topics)
+  - [4.2 Partitions](#42-partitions)
+  - [4.3 Why Partitions Matter](#43-why-partitions-matter)
 
-- [5.2 Replication and Fault Tolerance](#52-replication-and-fault-tolerance)
-  - [Replication Factors](#replication-factors)
-  - [Leader and Follower Replicas](#leader-and-follower-replicas)
-  - [In-Sync Replicas (ISR)](#in-sync-replicas-isr)
-
-- [5.3 Understanding the Commit Log](#53-understanding-the-commit-log)
-  - [Commit Log Concept](#commit-log-concept)
-  - [Data Retention](#data-retention)
-  - [Benefits](#benefits)
-
-- [5.4 Consumer Groups and Load Balancing](#54-consumer-groups-and-load-balancing)
-  - [Consumer Groups](#consumer-groups)
-  - [Load Balancing](#load-balancing)
-
-- [5.5 Offset Management](#55-offset-management)
-  - [Committing Offsets](#committing-offsets)
-  - [Delivery Semantics](#delivery-semantics)
-  - [Offset Storage](#offset-storage)
-  - [Offset Management Strategies](#offset-management-strategies)
-
-- [5.6 Exactly-Once Semantics in Kafka](#56-exactly-once-semantics-in-kafka)
-  - [Idempotent Producers](#idempotent-producers)
-  - [Transactions](#transactions)
-  - [Transactional Consumers](#transactional-consumers)
-
-- [5.7 Kafka's High-Level Architecture](#57-kafkas-high-level-architecture)
-  - [Components](#components)
-  - [Data Flow](#data-flow)
-  - [Cluster Anatomy](#cluster-anatomy)
-
-- [5.8 Client Request Routing](#58-client-request-routing)
-  - [Metadata Fetching](#metadata-fetching)
-  - [Direct Communication](#direct-communication)
-  - [Handling Leader Changes](#handling-leader-changes)
-  - [Benefits](#benefits-1)
-
-- [5.9 ISR Maintenance and Scenarios](#59-isr-maintenance-and-scenarios)
-  - [Maintaining ISR (In-Sync Replicas)](#maintaining-isr-in-sync-replicas)
-  - [Health Checks and Lag Monitoring](#health-checks-and-lag-monitoring)
-  - [What Happens When ISR Has Only the Leader](#what-happens-when-isr-has-only-the-leader)
-  - [Is It Possible for ISR to Be Empty?](#is-it-possible-for-isr-to-be-empty)
-  - [Recovery and Reassignment](#recovery-and-reassignment)
-  - [Configuration Parameters](#configuration-parameters)
-  - [Ensuring High Availability](#ensuring-high-availability)
+- [Unit 5: Kafka Architecture and Internals](#unit-5-kafka-architecture-and-internals)
+  - [5.1 Replication and Fault Tolerance](#51-replication-and-fault-tolerance)
+    - [5.1.1 Replication Factors](#511-replication-factors)
+    - [5.1.2 Leader and Follower Replicas](#512-leader-and-follower-replicas)
+    - [5.1.3 In-Sync Replicas (ISR)](#513-in-sync-replicas-isr)
+  - [5.2 Understanding the Commit Log](#52-understanding-the-commit-log)
+    - [5.2.1 Commit Log Concept](#521-commit-log-concept)
+    - [5.2.2 Data Retention](#522-data-retention)
+    - [5.2.3 Benefits](#523-benefits)
+  - [5.3 Consumer Groups and Load Balancing](#53-consumer-groups-and-load-balancing)
+    - [5.3.1 Consumer Groups](#531-consumer-groups)
+    - [5.3.2 Load Balancing](#532-load-balancing)
+  - [5.4 Offset Management](#54-offset-management)
+    - [5.4.1 Committing Offsets](#541-committing-offsets)
+    - [5.4.2 Delivery Semantics](#542-delivery-semantics)
+    - [5.4.3 Offset Storage](#543-offset-storage)
+    - [5.4.4 Offset Management Strategies](#544-offset-management-strategies)
+  - [5.5 Exactly-Once Semantics in Kafka](#55-exactly-once-semantics-in-kafka)
+    - [5.5.1 Idempotent Producers](#551-idempotent-producers)
+    - [5.5.2 Transactions](#552-transactions)
+    - [5.5.3 Transactional Consumers](#553-transactional-consumers)
+  - [5.6 Kafka's High-Level Architecture](#56-kafkas-high-level-architecture)
+    - [5.6.1 Components](#561-components)
+    - [5.6.2 Data Flow](#562-data-flow)
+    - [5.6.3 Cluster Anatomy](#563-cluster-anatomy)
+  - [5.7 Client Request Routing](#57-client-request-routing)
+    - [5.7.1 Metadata Fetching](#571-metadata-fetching)
+    - [5.7.2 Direct Communication](#572-direct-communication)
+    - [5.7.3 Handling Leader Changes](#573-handling-leader-changes)
+    - [5.7.4 Benefits](#574-benefits)
+  - [5.8 ISR Maintenance and Scenarios](#58-isr-maintenance-and-scenarios)
+    - [5.8.1 Maintaining ISR (In-Sync Replicas)](#581-maintaining-isr-in-sync-replicas)
+    - [5.8.2 Health Checks and Lag Monitoring](#582-health-checks-and-lag-monitoring)
+    - [5.8.3 What Happens When ISR Has Only the Leader](#583-what-happens-when-isr-has-only-the-leader)
+    - [5.8.4 Is It Possible for ISR to Be Empty?](#584-is-it-possible-for-isr-to-be-empty)
+    - [5.8.5 Recovery and Reassignment](#585-recovery-and-reassignment)
+    - [5.8.6 Configuration Parameters](#586-configuration-parameters)
+    - [5.8.7 Ensuring High Availability](#587-ensuring-high-availability)
 
 - [Unit 6: Advanced Producer Concepts](#unit-6-advanced-producer-concepts)
   - [6.1 Producer Acknowledgments and Retries](#61-producer-acknowledgments-and-retries)
@@ -75,7 +69,7 @@
   - [6.5 Advanced Configuration Settings](#65-advanced-configuration-settings)
   - [6.6 Monitoring and Metrics](#66-monitoring-and-metrics)
 
-- [Advanced Consumer Concepts](#advanced-consumer-concepts)
+- [Unit 7: Advanced Consumer Concepts](#unit-7-advanced-consumer-concepts)
   - [7.1 Consumer Rebalancing and Partition Assignment Strategies](#71-consumer-rebalancing-and-partition-assignment-strategies)
   - [7.2 Manual Partition Assignment](#72-manual-partition-assignment)
   - [7.3 Rebalancing Listeners](#73-rebalancing-listeners)
@@ -83,7 +77,21 @@
   - [7.5 Consuming Records with Timestamps](#75-consuming-records-with-timestamps)
   - [7.6 Best Practices for Consumer Configuration](#76-best-practices-for-consumer-configuration)
 
+- [Unit 8: Kafka Connect](#unit-8-kafka-connect)
+  - [8.1 Introduction to Kafka Connect](#81-introduction-to-kafka-connect)
+  - [8.2 Kafka Connect Architecture](#82-kafka-connect-architecture)
+  - [8.3 Source and Sink Connectors](#83-source-and-sink-connectors)
+  - [8.4 Configuring Connectors](#84-configuring-connectors)
+  - [8.5 Distributed Mode vs. Standalone Mode](#85-distributed-mode-vs-standalone-mode)
+  - [8.6 Developing Custom Connectors](#86-developing-custom-connectors)
+  - [8.7 Single Message Transforms (SMTs)](#87-single-message-transforms-smts)
+  - [8.8 Data Format and Schema Management](#88-data-format-and-schema-management)
+  - [8.9 Best Practices and Troubleshooting](#89-best-practices-and-troubleshooting)
+  - [8.10 Practical Example: Setting Up a JDBC Sink Connector](#810-practical-example-setting-up-a-jdbc-sink-connector)
+  - [8.11 Deep Dive into Kafka Connect: Workers, Tasks, and Parallelism](#811-deep-dive-into-kafka-connect-workers-tasks-and-parallelism)
+
 ---
+
 
 ## Introduction to Apache Kafka
 
@@ -1652,5 +1660,473 @@ props.put("partition.assignment.strategy", "org.apache.kafka.clients.consumer.St
       System.out.printf("%s: %f%n", entry.getKey().name(), entry.getValue().metricValue());
   }
   ```
+
+---
+
+# Kafka Connect
+
+## 8.1 Introduction to Kafka Connect
+
+### What is Kafka Connect?
+
+- **Kafka Connect** is a framework for connecting Kafka with external systems, such as databases, key-value stores, search indexes, and file systems.
+- **Purpose**: Simplifies the integration of Kafka with other systems by providing ready-to-use connectors.
+
+### Why Use Kafka Connect?
+
+- **Simplifies Data Integration**: Reduces the effort required to build custom data pipelines.
+- **Scalable and Reliable**: Designed to handle large data volumes efficiently.
+- **Pluggable Connectors**: Offers a wide range of pre-built connectors for various systems.
+- **Fault Tolerance**: Automatically recovers from failures and provides exactly-once delivery semantics.
+
+### Use Cases
+
+- **Database Streaming**: Ingest data changes from databases into Kafka.
+- **Log Aggregation**: Collect logs from various sources and stream them to Kafka.
+- **Indexing**: Stream data from Kafka to search indexes like Elasticsearch.
+- **Data Warehouse Integration**: Export data from Kafka to data warehouses for analytics.
+
+---
+
+## 8.2 Kafka Connect Architecture
+
+### High-Level Components
+
+- **Connectors**: Define where data comes from (Source) and where it goes (Sink).
+- **Workers**: Processes that execute connectors and tasks.
+- **Tasks**: Units of work that move data to or from Kafka.
+- **Configurations**: Define the behavior of connectors and workers.
+
+### How Kafka Connect Works
+
+1. **Deployment Modes**:
+   - **Standalone Mode**: Runs on a single process; suitable for development and testing.
+   - **Distributed Mode**: Runs across multiple processes; offers scalability and fault tolerance.
+
+2. **Data Flow**:
+   - **Source Connector**:
+     - Reads data from an external system.
+     - Converts it into **SourceRecords**.
+     - Writes to Kafka topics.
+   - **Sink Connector**:
+     - Reads data from Kafka topics.
+     - Converts **SinkRecords** into the required format.
+     - Writes data to the external system.
+
+### Key Concepts
+
+- **Offset Management**: Tracks the progress of data transfer to prevent duplication or loss.
+- **Serialization and Deserialization**: Uses **Converters** to handle data formats (e.g., JSON, Avro).
+- **Single Message Transforms (SMTs)**: Lightweight transformations applied to individual messages.
+
+---
+
+## 8.3 Source and Sink Connectors
+
+### Understanding Connectors
+
+- **Source Connectors**: Import data from external systems into Kafka.
+- **Sink Connectors**: Export data from Kafka to external systems.
+
+### Commonly Used Connectors
+
+- **Source Connectors**:
+  - **JDBC Source Connector**: Reads data from relational databases.
+  - **Debezium Connectors**: Capture Change Data Capture (CDC) events from databases like MySQL, PostgreSQL.
+  - **File Source Connector**: Reads data from files.
+
+- **Sink Connectors**:
+  - **Elasticsearch Sink Connector**: Writes data to Elasticsearch.
+  - **HDFS Sink Connector**: Writes data to Hadoop HDFS.
+  - **JDBC Sink Connector**: Writes data to relational databases.
+  - **S3 Sink Connector**: Writes data to Amazon S3.
+
+### Finding Connectors
+
+- **Confluent Hub**: Repository of connectors available for download.
+- **Community Connectors**: Open-source connectors maintained by the community.
+
+---
+
+## 8.4 Configuring Connectors
+
+### Connector Configuration Basics
+
+- **Connector Class**: The fully qualified class name of the connector.
+- **Tasks Max**: Maximum number of tasks the connector can use.
+- **Connector-Specific Settings**: Properties unique to each connector (e.g., connection URLs, topics).
+
+### Example Configuration: JDBC Source Connector
+
+```json
+{
+  "name": "jdbc-source-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:mysql://localhost:3306/mydb",
+    "connection.user": "user",
+    "connection.password": "password",
+    "table.whitelist": "users",
+    "mode": "incrementing",
+    "incrementing.column.name": "id",
+    "topic.prefix": "jdbc-"
+  }
+}
+```
+
+### Running Connectors
+
+- **REST API**: Submit connector configurations via HTTP POST requests to the Kafka Connect REST API.
+- **CLI Tools**: Use command-line utilities to manage connectors (in standalone mode).
+
+### Steps to Deploy a Connector
+
+1. **Set Up Kafka Connect**: Start in standalone or distributed mode.
+2. **Prepare Configuration**: Create a JSON or properties file.
+3. **Deploy Connector**:
+   - **Standalone Mode**: Specify the connector configuration file when starting the worker.
+   - **Distributed Mode**: Use the REST API to submit the configuration.
+4. **Monitor Connector**: Check logs and status via REST API or monitoring tools.
+
+### Monitoring Connectors
+
+- **Connector Status API**: Retrieve the status of connectors and tasks.
+- **Metrics**: Exposed via JMX, collectable by monitoring systems.
+
+---
+
+## 8.5 Distributed Mode vs. Standalone Mode
+
+### Standalone Mode
+
+- **Characteristics**:
+  - Runs in a single process.
+  - Configuration is stored locally.
+- **Use Cases**:
+  - Development and testing.
+  - Simple deployments without high availability requirements.
+
+### Distributed Mode
+
+- **Characteristics**:
+  - Runs across multiple worker processes.
+  - Workers coordinate via Kafka topics.
+  - Provides scalability and fault tolerance.
+- **Use Cases**:
+  - Production environments.
+  - High availability and scalability requirements.
+
+### Comparison
+
+| Aspect                | Standalone Mode      | Distributed Mode    |
+|-----------------------|----------------------|---------------------|
+| Deployment Complexity | Simple               | More Complex        |
+| Scalability           | Limited              | Horizontally Scalable |
+| Fault Tolerance       | Limited              | High                |
+| Configuration Storage | Local Filesystem     | Internal Kafka Topics |
+| Management            | Local Configuration  | REST API            |
+
+---
+
+## 8.6 Developing Custom Connectors
+
+### When to Develop Custom Connectors
+
+- No existing connector meets your requirements.
+- Need to integrate with proprietary or specialized systems.
+- Require custom logic during data ingestion or egress.
+
+### Components of a Connector
+
+- **Connector Class**: Manages configuration and creates tasks.
+- **Task Class**: Performs the data copying work.
+- **Configuration Definitions**: Specify configuration parameters.
+- **Transformation Logic**: Optional custom transformations.
+
+### Steps to Create a Custom Connector
+
+1. **Set Up a Project**: Use Maven or Gradle; include Kafka Connect API dependency.
+2. **Implement the Connector Class**: Define start, stop, taskConfigs, and other methods.
+3. **Implement the Task Class**: Define how data is fetched or written.
+4. **Package and Deploy**: Build a JAR file and place it in the `plugins` directory.
+5. **Restart Kafka Connect Worker**: Load the new connector.
+
+### Best Practices
+
+- **Error Handling**: Ensure the connector can handle failures gracefully.
+- **Offset Management**: Use Kafka Connect's offset storage.
+- **Parallelism**: Design tasks to allow parallel execution if possible.
+- **Documentation**: Provide clear configuration documentation.
+
+---
+
+## 8.7 Single Message Transforms (SMTs)
+
+### What are SMTs?
+
+- **Single Message Transforms** are simple transformations applied to individual messages as they pass through the connector.
+
+### Common SMTs
+
+- **MaskField**: Masks sensitive fields in the data.
+- **RegexRouter**: Modifies topic names using regular expressions.
+- **TimestampRouter**: Routes messages to different topics based on timestamps.
+- **FilterFields**: Removes or includes specific fields from the data.
+
+### Applying SMTs in Configuration
+
+```json
+{
+  "transforms": "MaskField",
+  "transforms.MaskField.type": "org.apache.kafka.connect.transforms.MaskField$Value",
+  "transforms.MaskField.fields": "password,ssn"
+}
+```
+
+---
+
+## 8.8 Data Format and Schema Management
+
+### Converters
+
+- **Purpose**: Serialize and deserialize data between Kafka Connect and Kafka topics.
+- **Common Converters**:
+  - **JSON Converter**: For JSON data.
+  - **Avro Converter**: Uses Avro serialization with Schema Registry.
+  - **String Converter**: Treats data as plain strings.
+
+### Using Schema Registry
+
+- **Benefits**:
+  - Manages schemas for Avro, JSON Schema, or Protobuf data.
+  - Ensures producers and consumers agree on data structure.
+  - Supports schema evolution with compatibility checks.
+
+### Configuring Converters with Schema Registry
+
+```json
+{
+  "key.converter": "io.confluent.connect.avro.AvroConverter",
+  "key.converter.schema.registry.url": "http://localhost:8081",
+  "value.converter": "io.confluent.connect.avro.AvroConverter",
+  "value.converter.schema.registry.url": "http://localhost:8081"
+}
+```
+
+---
+
+## 8.9 Best Practices and Troubleshooting
+
+### Managing Offsets and Data Consistency
+
+- **Ensure Idempotency**: Design connectors to handle retries without duplicating data.
+- **Use Transactions if Supported**: Some systems support transactional writes.
+- **Monitor Offsets**: Regularly check that offsets are advancing.
+
+### Scaling Connectors
+
+- **Increase Tasks**: Adjust `tasks.max` to utilize more parallelism.
+- **Monitor Resources**: Ensure workers have sufficient CPU and memory.
+- **Load Balancing**: Distribute tasks evenly across workers.
+
+### Error Handling and Retries
+
+- **Configure Retry Policies**: Use `errors.retry.timeout` and `errors.retry.delay.max.ms`.
+- **Dead Letter Queues (DLQs)**: Capture problematic records for later analysis.
+
+```json
+{
+  "errors.tolerance": "all",
+  "errors.deadletterqueue.topic.name": "dlq-topic",
+  "errors.deadletterqueue.context.headers.enable": "true"
+}
+```
+
+### Monitoring and Logging
+
+- **Metrics**: Collect metrics exposed by Kafka Connect for performance monitoring.
+- **Logging**: Configure appropriate log levels for debugging.
+- **Alerting**: Set up alerts for connector failures or performance issues.
+
+---
+
+## 8.10 Practical Example: Setting Up a JDBC Sink Connector
+
+### Scenario
+
+- **Objective**: Export data from a Kafka topic to a relational database (e.g., PostgreSQL) using the JDBC Sink Connector.
+
+### Steps
+
+1. **Prerequisites**:
+   - Kafka cluster and Kafka Connect running.
+   - Target database accessible.
+
+2. **Install the JDBC Sink Connector**:
+   - Download and place the connector JAR in the `plugins` directory.
+   - Restart Kafka Connect workers.
+
+3. **Create Connector Configuration** (`jdbc-sink-connector.json`):
+
+```json
+{
+  "name": "jdbc-sink-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "topics": "orders",
+    "connection.url": "jdbc:postgresql://localhost:5432/mydb",
+    "connection.user": "dbuser",
+    "connection.password": "dbpassword",
+    "auto.create": "true",
+    "insert.mode": "upsert",
+    "pk.mode": "record_key",
+    "pk.fields": "order_id",
+    "table.name.format": "orders_table"
+  }
+}
+```
+
+4. **Deploy the Connector**:
+
+```bash
+curl -X POST -H "Content-Type: application/json" --data @jdbc-sink-connector.json http://localhost:8083/connectors
+```
+
+5. **Verify the Connector Status**:
+
+```bash
+curl http://localhost:8083/connectors/jdbc-sink-connector/status
+```
+
+6. **Monitor Data Flow**:
+   - Produce messages to the `orders` topic.
+   - Verify data insertion into the database.
+
+---
+
+## 8.11 Deep Dive into Kafka Connect: Workers, Tasks, and Parallelism
+
+### Scenario Overview
+
+- **Objective**: Move data from **MySQL** to **Cassandra** using Kafka Connect in **distributed mode** with **4 workers**.
+- **Connectors Involved**:
+  - **Source Connector**: Reads data from MySQL.
+  - **Sink Connector**: Writes data to Cassandra.
+
+### Understanding How Kafka Connect Operates in This Scenario
+
+1. **Connector Trigger Mechanism**:
+
+   - **JDBC Source Connector**:
+     - **Polling-based**: Periodically polls MySQL for new data.
+     - Uses `poll.interval.ms` and `batch.max.rows` for configuration.
+   - **Debezium MySQL Connector**:
+     - **Event-driven**: Listens to MySQL binlog for real-time changes.
+
+2. **Batch Size and Data Movement**:
+
+   - **Determined by**:
+     - **JDBC Connector**: `batch.max.rows`.
+     - **Debezium Connector**: Internally managed.
+   - **Impact**:
+     - Larger batches increase throughput but require more memory.
+
+3. **Role of Workers and Tasks**:
+
+   - **Workers**:
+     - Execute tasks and provide scalability.
+     - Coordinate via Kafka's group management protocol.
+   - **Tasks**:
+     - Units of work that perform data transfer.
+     - Configurable via `tasks.max`.
+
+4. **Task Distribution Among Workers**:
+
+   - **Parallelism**:
+     - **Source Connector**: Can be increased by raising `tasks.max` and properly partitioning data.
+     - **Sink Connector**: Consumes from multiple Kafka partitions in parallel.
+   - **Assignment**:
+     - Tasks are distributed across workers for load balancing.
+
+### Data Flow Overview
+
+1. **Source Connector (MySQL to Kafka)**:
+
+   - **Connector**: JDBC Source or Debezium Connector.
+   - **Tasks**: Configurable number for parallelism.
+   - **Workers**: Distribute tasks among themselves.
+
+2. **Kafka Cluster**:
+
+   - **Data Storage**: Kafka topics hold data from MySQL.
+   - **Partitioning**: Enables parallel consumption by the sink connector.
+
+3. **Sink Connector (Kafka to Cassandra)**:
+
+   - **Connector**: Cassandra Sink Connector.
+   - **Tasks**: Configurable number to parallelize writes.
+   - **Workers**: Tasks are assigned to workers for execution.
+
+### Configuration Examples
+
+#### JDBC Source Connector Configuration
+
+```json
+{
+  "name": "jdbc-source-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": "4",
+    "connection.url": "jdbc:mysql://localhost:3306/mydb",
+    "connection.user": "user",
+    "connection.password": "password",
+    "mode": "incrementing",
+    "incrementing.column.name": "id",
+    "table.whitelist": "users,orders,products,inventory",
+    "poll.interval.ms": "5000"
+  }
+}
+```
+
+#### Cassandra Sink Connector Configuration
+
+```json
+{
+  "name": "cassandra-sink-connector",
+  "config": {
+    "connector.class": "com.datamountaineer.streamreactor.connect.cassandra.CassandraSinkConnector",
+    "tasks.max": "4",
+    "topics": "users,orders,products,inventory",
+    "connect.cassandra.key.space": "mykeyspace",
+    "connect.cassandra.contact.points": "cassandra-host",
+    "connect.cassandra.port": "9042",
+    "connect.cassandra.username": "cassandra",
+    "connect.cassandra.password": "cassandra"
+  }
+}
+```
+
+### Additional Considerations
+
+- **Ensuring Effective Parallelism**:
+  - **Kafka Topics** should have multiple partitions.
+  - Adjust `tasks.max` to utilize available workers.
+- **Connector Limitations**:
+  - **Debezium Connector**: Typically runs a single task per connector to maintain order.
+- **Monitoring and Tuning**:
+  - Monitor resource usage (CPU, memory, network).
+  - Adjust configurations based on performance metrics.
+
+### Summary
+
+- **Workers** execute tasks and provide fault tolerance.
+- **Tasks** determine the level of parallelism.
+- **Parallel Data Movement** is achieved through proper configuration.
+- **Configuration is Key**:
+  - Set `tasks.max` appropriately.
+  - Ensure Kafka topics are properly partitioned.
+  - Adjust batch sizes and polling intervals for optimal performance.
 
 ---
