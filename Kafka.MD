@@ -1,85 +1,67 @@
+Certainly! Here's the updated, slightly trimmed-down Table of Contents for your README file:
+
+---
+
 # Table of Contents
 
 - [Introduction to Apache Kafka](#introduction-to-apache-kafka)
   - [Overview](#overview)
+
 - [Basic Kafka Operations](#basic-kafka-operations)
   - [Command-Line Tools](#command-line-tools)
-    - [Topic Management](#topic-management)
-    - [Producing Messages](#producing-messages)
-    - [Consuming Messages](#consuming-messages)
   - [Message Formats](#message-formats)
+
 - [Kafka Producers and Consumers in Java](#kafka-producers-and-consumers-in-java)
   - [4.1 Setting Up a Java Project with Kafka Dependencies](#41-setting-up-a-java-project-with-kafka-dependencies)
   - [4.2 Writing a Simple Producer](#42-writing-a-simple-producer)
   - [4.3 Writing a Simple Consumer](#43-writing-a-simple-consumer)
   - [4.4 Serialization and Deserialization](#44-serialization-and-deserialization)
-    - [Built-in Serializers/Deserializers](#built-in-serializersdeserializers)
-    - [Custom Serializers and Deserializers](#custom-serializers-and-deserializers)
-      - [Example Custom Serializer](#example-custom-serializer)
-      - [Example Custom Deserializer](#example-custom-deserializer)
-      - [Usage in Producer and Consumer Configuration](#usage-in-producer-and-consumer-configuration)
   - [4.5 Multi-Threaded Consumers](#45-multi-threaded-consumers)
-    - [Processing Messages in Parallel Can Lead to Out-of-Order Handling](#processing-messages-in-parallel-can-lead-to-out-of-order-handling)
-    - [Approaches to Multi-Threaded Consumption](#approaches-to-multi-threaded-consumption)
-      - [Approach 1: One Consumer Instance Per Thread](#approach-1-one-consumer-instance-per-thread)
-        - [Implementation Example](#implementation-example)
-        - [Starting Multiple Consumer Threads](#starting-multiple-consumer-threads)
-        - [Considerations](#considerations)
-      - [Approach 2: Single Consumer Instance with Worker Threads](#approach-2-single-consumer-instance-with-worker-threads)
-      - [Example: Commit After Processing All Records](#example-commit-after-processing-all-records)
-        - [Considerations](#considerations-1)
   - [4.6 Handling Message Ordering](#46-handling-message-ordering)
   - [4.7 Pausing and Resuming Consumption](#47-pausing-and-resuming-consumption)
-    - [Using `consumer.pause()` and `consumer.resume()`](#using-consumerpause-and-consumerresume)
-      - [Implementation Example](#implementation-example-1)
-      - [Explanation](#explanation)
   - [4.8 File-Based Producer](#48-file-based-producer)
-    - [Overview](#overview)
-    - [Implementation Steps](#implementation-steps)
-    - [Sample Code](#sample-code)
+
 - [Topics and Partitions](#topics-and-partitions)
   - [Topics](#topics)
   - [Partitions](#partitions)
   - [Why Partitions Matter](#why-partitions-matter)
-    - [Example](#example)
+
 - [5.2 Replication and Fault Tolerance](#52-replication-and-fault-tolerance)
   - [Replication Factors](#replication-factors)
   - [Leader and Follower Replicas](#leader-and-follower-replicas)
   - [In-Sync Replicas (ISR)](#in-sync-replicas-isr)
-    - [Example](#example-1)
+
 - [5.3 Understanding the Commit Log](#53-understanding-the-commit-log)
   - [Commit Log Concept](#commit-log-concept)
   - [Data Retention](#data-retention)
   - [Benefits](#benefits)
+
 - [5.4 Consumer Groups and Load Balancing](#54-consumer-groups-and-load-balancing)
   - [Consumer Groups](#consumer-groups)
   - [Load Balancing](#load-balancing)
-    - [Example](#example-2)
+
 - [5.5 Offset Management](#55-offset-management)
   - [Committing Offsets](#committing-offsets)
   - [Delivery Semantics](#delivery-semantics)
   - [Offset Storage](#offset-storage)
   - [Offset Management Strategies](#offset-management-strategies)
-    - [Automatic Commit](#automatic-commit)
-    - [Manual Commit](#manual-commit)
-      - [Example](#example-3)
+
 - [5.6 Exactly-Once Semantics in Kafka](#56-exactly-once-semantics-in-kafka)
   - [Idempotent Producers](#idempotent-producers)
   - [Transactions](#transactions)
-    - [Producer Example with Transactions](#producer-example-with-transactions)
   - [Transactional Consumers](#transactional-consumers)
+
 - [5.7 Kafka's High-Level Architecture](#57-kafkas-high-level-architecture)
   - [Components](#components)
   - [Data Flow](#data-flow)
   - [Cluster Anatomy](#cluster-anatomy)
+
 - [5.8 Client Request Routing](#58-client-request-routing)
   - [Metadata Fetching](#metadata-fetching)
-    - [Process](#process)
   - [Direct Communication](#direct-communication)
-    - [Example](#example-4)
   - [Handling Leader Changes](#handling-leader-changes)
-    - [Illustration](#illustration)
   - [Benefits](#benefits-1)
+
 - [5.9 ISR Maintenance and Scenarios](#59-isr-maintenance-and-scenarios)
   - [Maintaining ISR (In-Sync Replicas)](#maintaining-isr-in-sync-replicas)
   - [Health Checks and Lag Monitoring](#health-checks-and-lag-monitoring)
@@ -88,7 +70,15 @@
   - [Recovery and Reassignment](#recovery-and-reassignment)
   - [Configuration Parameters](#configuration-parameters)
   - [Ensuring High Availability](#ensuring-high-availability)
-    - [Example](#example-5)
+
+- [Unit 6: Advanced Producer Concepts](#unit-6-advanced-producer-concepts)
+  - [6.1 Producer Acknowledgments and Retries](#61-producer-acknowledgments-and-retries)
+  - [6.2 Batching and Compression](#62-batching-and-compression)
+  - [6.3 Custom Partitioning Strategies](#63-custom-partitioning-strategies)
+  - [6.4 Idempotent Producers and Transactions](#64-idempotent-producers-and-transactions)
+  - [6.5 Advanced Configuration Settings](#65-advanced-configuration-settings)
+  - [6.6 Monitoring and Metrics](#66-monitoring-and-metrics)
+
 
 ---
 
@@ -1009,5 +999,303 @@ If Broker 1 fails:
 - No in-sync replicas are available.
 - Partition 0 becomes unavailable until Broker 1 recovers or followers catch up.
 ```
+
+---
+
+# Unit 6: Advanced Producer Concepts
+
+## 6.1 Producer Acknowledgments and Retries
+
+### Acknowledgment Configuration (`acks`)
+
+The `acks` setting determines the level of acknowledgment the producer requires the leader broker to have received before considering a request complete.
+
+- **`acks=0`**:
+  - The producer does not wait for any acknowledgment.
+  - **Pros**: Maximum throughput, low latency.
+  - **Cons**: Messages may be lost; no delivery guarantee.
+
+- **`acks=1`**:
+  - Waits for the leader broker's acknowledgment.
+  - **Pros**: Balanced reliability and performance.
+  - **Cons**: Messages may be lost if the leader fails after acknowledging.
+
+- **`acks=all`** (or **`acks=-1`**):
+  - Waits for acknowledgment from all in-sync replicas (ISRs).
+  - **Pros**: Highest data durability.
+  - **Cons**: Higher latency, lower throughput.
+
+**Configuration Example**:
+
+```java
+Properties props = new Properties();
+props.put("acks", "all"); // Ensures the highest level of durability
+```
+
+### Retries and Retry Backoff
+
+- **`retries`**:
+  - Number of times the producer will retry sending a failed message.
+  - **Recommendation**: Set a high value to handle transient failures.
+
+- **`retry.backoff.ms`**:
+  - Time to wait before attempting a retry.
+  - **Default**: `100` milliseconds.
+
+**Configuration Example**:
+
+```java
+props.put("retries", 5);            // Number of retries
+props.put("retry.backoff.ms", 200); // Backoff time between retries in milliseconds
+```
+
+---
+
+## 6.2 Batching and Compression
+
+### Batching
+
+- **Purpose**: Improve throughput by sending multiple records in a single request.
+
+**Key Settings**:
+
+- **`batch.size`**:
+  - Maximum bytes per batch for a single partition.
+  - **Default**: `16384` bytes (16 KB).
+
+- **`linger.ms`**:
+  - Time to wait for additional messages before sending the batch.
+  - **Default**: `0` milliseconds.
+
+**Configuration Example**:
+
+```java
+props.put("batch.size", 32768); // 32 KB batch size
+props.put("linger.ms", 5);      // Wait up to 5 ms
+```
+
+### Compression
+
+- **Purpose**: Reduce network bandwidth usage and improve throughput.
+
+**Compression Types**:
+
+- `none` (default), `gzip`, `snappy`, `lz4`, `zstd`.
+
+**Configuration Example**:
+
+```java
+props.put("compression.type", "snappy"); // Use Snappy compression
+```
+
+---
+
+## 6.3 Custom Partitioning Strategies
+
+### Default Partitioning Behavior
+
+- **Without a Key**: Round-robin distribution among partitions.
+- **With a Key**: Partition determined by the hash of the key.
+
+### Implementing a Custom Partitioner
+
+**Purpose**: Control message distribution to partitions based on custom logic.
+
+**Steps**:
+
+1. **Implement the `Partitioner` Interface**:
+
+   ```java
+   import org.apache.kafka.clients.producer.Partitioner;
+   import org.apache.kafka.common.Cluster;
+   import org.apache.kafka.common.utils.Utils;
+   import java.util.Map;
+
+   public class CustomPartitioner implements Partitioner {
+       @Override
+       public void configure(Map<String, ?> configs) {
+           // Configuration if needed
+       }
+
+       @Override
+       public int partition(String topic, Object key, byte[] keyBytes,
+                            Object value, byte[] valueBytes, Cluster cluster) {
+           // Custom partitioning logic
+           int numPartitions = cluster.partitionCountForTopic(topic);
+           if (keyBytes == null) {
+               // Default to partition 0 if no key
+               return 0;
+           } else {
+               // Example: Send messages with key starting with 'A' to partition 0
+               if (((String) key).startsWith("A")) {
+                   return 0;
+               } else {
+                   // Use default hash partitioning
+                   return (Utils.toPositive(Utils.murmur2(keyBytes)) % numPartitions);
+               }
+           }
+       }
+
+       @Override
+       public void close() {
+           // Cleanup if needed
+       }
+   }
+   ```
+
+2. **Configure the Producer**:
+
+   ```java
+   props.put("partitioner.class", "com.example.CustomPartitioner");
+   ```
+
+3. **Use the Producer as Usual**:
+
+   ```java
+   ProducerRecord<String, String> record = new ProducerRecord<>("my-topic", "Key1", "Value1");
+   producer.send(record);
+   ```
+
+---
+
+## 6.4 Idempotent Producers and Transactions
+
+### Idempotent Producers
+
+- **Purpose**: Prevent duplicate messages during retries.
+- **Enabling Idempotence**:
+
+  ```java
+  props.put("enable.idempotence", "true");
+  ```
+
+- **Constraints**:
+  - `acks=all`
+  - `retries` > 0
+  - `max.in.flight.requests.per.connection` ≤ 5
+
+### Transactions
+
+- **Purpose**: Atomic writes across multiple partitions and topics.
+- **Using Transactions**:
+
+  ```java
+  props.put("transactional.id", "my-transactional-id"); // Assign a transactional ID
+  KafkaProducer<String, String> producer = new KafkaProducer<>(props);
+
+  producer.initTransactions();
+
+  try {
+      producer.beginTransaction();
+      // Send messages
+      producer.send(new ProducerRecord<>("topic1", "key1", "value1"));
+      producer.send(new ProducerRecord<>("topic2", "key2", "value2"));
+      producer.commitTransaction();
+  } catch (Exception e) {
+      producer.abortTransaction();
+      e.printStackTrace();
+  } finally {
+      producer.close();
+  }
+  ```
+
+- **Consumer Configuration**:
+
+  ```java
+  props.put("isolation.level", "read_committed");
+  ```
+
+---
+
+## 6.5 Advanced Configuration Settings
+
+### `max.in.flight.requests.per.connection`
+
+#### Definition
+
+- **Purpose**: Controls the maximum number of unacknowledged requests the producer will send on a single connection.
+- **Default**: `5`
+
+#### Behavior
+
+- **Ordering Guarantee**:
+  - **Setting to `1`** ensures messages are written in order.
+  - **Higher values** can lead to out-of-order messages during retries.
+
+#### Relationship with Idempotence and Transactions
+
+- **Idempotent Producers**:
+  - Must set `max.in.flight.requests.per.connection` to `5` or less.
+- **Transactional Producers**:
+  - **Required** to set `max.in.flight.requests.per.connection` to `5` or less to maintain ordering guarantees.
+
+**Configuration Example**:
+
+```java
+props.put("max.in.flight.requests.per.connection", 5);
+```
+
+### Relationship and Impact Among `buffer.memory`, `max.request.size`, `batch.size`, and `linger.ms`
+
+These parameters collectively influence producer performance, memory usage, and batching behavior.
+
+#### 1. `batch.size`
+
+- **Purpose**: Maximum bytes per batch for a single partition.
+
+#### 2. `linger.ms`
+
+- **Purpose**: Time to wait for more records before sending a batch.
+
+#### 3. `max.request.size`
+
+- **Purpose**: Maximum size of a request sent to the broker.
+
+#### 4. `buffer.memory`
+
+- **Purpose**: Total memory available to buffer records waiting to be sent.
+
+#### How They Interact
+
+- **Batch Formation**:
+  - A batch is sent when `batch.size` is reached or `linger.ms` expires.
+- **Constraints**:
+  - `batch.size` must be ≤ `max.request.size`.
+  - `buffer.memory` must be sufficient to hold all accumulated batches.
+- **Impact on Performance**:
+  - Larger `batch.size` and `linger.ms` improve throughput but may increase latency and memory usage.
+  - Insufficient `buffer.memory` can lead to blocking or `TimeoutException`.
+
+#### Practical Configuration Example
+
+```java
+props.put("batch.size", 65536);          // 64 KB batch size
+props.put("linger.ms", 10);              // Wait up to 10 ms
+props.put("max.request.size", 1048576);  // 1 MB max request size
+props.put("buffer.memory", 67108864);    // 64 MB buffer memory
+```
+
+---
+
+## 6.6 Monitoring and Metrics
+
+### Importance of Monitoring
+
+- **Performance Tracking**: Identify bottlenecks.
+- **Error Detection**: Quickly address issues.
+- **Capacity Planning**: Understand resource utilization.
+
+### Common Metrics
+
+- `record-send-rate`
+- `request-latency-avg`
+- `batch-size-avg`
+- `compression-rate-avg`
+- `record-error-rate`
+
+### Accessing Metrics
+
+- **JMX (Java Management Extensions)**
+- **Monitoring Tools**: Kafka Manager, Prometheus, Grafana, etc.
 
 ---
