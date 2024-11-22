@@ -90,6 +90,20 @@
   - [8.10 Practical Example: Setting Up a JDBC Sink Connector](#810-practical-example-setting-up-a-jdbc-sink-connector)
   - [8.11 Deep Dive into Kafka Connect: Workers, Tasks, and Parallelism](#811-deep-dive-into-kafka-connect-workers-tasks-and-parallelism)
 
+- [Unit 9: Kafka Streams API](#unit-9-kafka-streams-api)
+  - [9.1 Introduction to Kafka Streams](#91-introduction-to-kafka-streams)
+  - [9.2 Stream Processing Concepts](#92-stream-processing-concepts)
+  - [9.3 Kafka Streams Architecture](#93-kafka-streams-architecture)
+  - [9.4 Writing a Simple Kafka Streams Application](#94-writing-a-simple-kafka-streams-application)
+  - [9.5 Stateful Streams](#95-stateful-streams)
+    - [5.1 State Storage in Kafka Streams](#51-state-storage-in-kafka-streams)
+    - [5.2 Handling Service Instance Failures and Cluster Changes](#52-handling-service-instance-failures-and-cluster-changes)
+    - [5.3 Impact on Windowing](#53-impact-on-windowing)
+    - [5.4 Use Cases for Stateful Streams](#54-use-cases-for-stateful-streams)
+  - [9.6 Integrating Kafka Streams with Spring Boot](#96-integrating-kafka-streams-with-spring-boot)
+    - [6.1 Code Organization](#61-code-organization)
+    - [6.2 Application ID and Consumer Groups](#62-application-id-and-consumer-groups)
+
 ---
 
 
@@ -2128,5 +2142,245 @@ curl http://localhost:8083/connectors/jdbc-sink-connector/status
   - Set `tasks.max` appropriately.
   - Ensure Kafka topics are properly partitioned.
   - Adjust batch sizes and polling intervals for optimal performance.
+
+---
+
+## Unit 9: Kafka Streams API
+
+### 9.1 Introduction to Kafka Streams
+
+**Kafka Streams** is a **Java library** designed for **stream processing** that allows you to consume, process, and produce data from Kafka topics seamlessly.
+
+**Key Features:**
+- **Distributed and Scalable:** Automatically handles load balancing across multiple instances.
+- **Fault-Tolerant:** Provides mechanisms for stateful processing with built-in fault tolerance.
+- **Exactly-Once Semantics:** Ensures data is processed exactly once to prevent duplication or loss.
+- **No Separate Cluster Needed:** Runs within your application without requiring a dedicated processing cluster.
+
+**Use Cases:**
+- **Real-Time Data Processing:** Enriching, filtering, or aggregating data in real-time.
+- **Event-Driven Microservices:** Building services that react to streaming data.
+- **Continuous ETL:** Transforming data as it moves from one system to another.
+- **Anomaly Detection:** Identifying patterns or anomalies in streaming data.
+
+### 9.2 Stream Processing Concepts
+
+**Streams and Tables:**
+- **Stream:** An unbounded, continuously updating sequence of records representing data in motion.
+- **Table:** A snapshot of data at a given point in time representing data at rest.
+
+**Records:**
+- **Key-Value Pair:** Represents individual pieces of data within streams or tables.
+- **Timestamp:** Indicates when the record was created or received.
+
+**Processing Topology:**
+- **Definition:** The blueprint of data flow and processing logic consisting of sources, processors, and sinks.
+
+**Stateless vs. Stateful Processing:**
+- **Stateless:** Each record is processed independently (e.g., `map`, `filter`, `flatMap`).
+- **Stateful:** Processing depends on accumulated state or previous records (e.g., `aggregate`, `join`, `windowed operations`).
+
+### 9.3 Kafka Streams Architecture
+
+**Application Instances:**
+- Deployed as standard Java applications.
+- Multiple instances can run in parallel for scalability and fault tolerance.
+
+**Stream Partitions and Tasks:**
+- **Partitions:** Kafka topic partitions serve as units of parallelism.
+- **Tasks:** Kafka Streams divides processing into tasks, each handling one or more partitions.
+
+**State Stores:**
+- **Purpose:** Store state required for stateful operations like aggregations or joins.
+- **Types:**
+  - **Persistent State Stores:** Stored on disk using **RocksDB** (default).
+  - **In-Memory State Stores:** Stored in memory for faster access.
+- **Changelog Topics:** Backup state stores to Kafka topics for fault tolerance.
+
+**Threading Model:**
+- **Threads:** Managed within the application via the `num.stream.threads` property.
+- **Configuration:** Controls the number of processing threads per instance.
+
+### 9.4 Writing a Simple Kafka Streams Application
+
+**Setting Up the Project:**
+- **Maven Dependency:**
+  ```xml
+  <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-streams</artifactId>
+      <version>3.5.0</version>
+  </dependency>
+  ```
+- **Gradle Dependency:**
+  ```groovy
+  implementation 'org.apache.kafka:kafka-streams:3.5.0'
+  ```
+
+**Basic Components:**
+- **StreamsConfig:** Holds configuration properties.
+- **StreamsBuilder:** Constructs the processing topology.
+- **KStream:** Represents a stream of records.
+- **KTable:** Represents a changelog stream of updates.
+
+**Example: Word Count Application**
+```java
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.*;
+import org.apache.kafka.streams.kstream.*;
+
+import java.util.Arrays;
+import java.util.Properties;
+
+public class WordCountApplication {
+    public static void main(String[] args) {
+        // Configuration
+        Properties props = new Properties();
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "wordcount-app");
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        props.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams");
+
+        // Topology
+        StreamsBuilder builder = new StreamsBuilder();
+        KStream<String, String> textLines = builder.stream("input-topic");
+        KTable<String, Long> wordCounts = textLines
+            .flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
+            .groupBy((key, word) -> word)
+            .count(Materialized.as("counts-store"));
+        wordCounts.toStream().to("output-topic", Produced.with(Serdes.String(), Serdes.Long()));
+
+        // Start Streams
+        KafkaStreams streams = new KafkaStreams(builder.build(), props);
+        streams.start();
+
+        // Shutdown Hook
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+    }
+}
+```
+
+### 9.5 Stateful Streams
+
+Stateful stream processing involves maintaining state across multiple records, enabling complex operations like aggregations, joins, and windowing.
+
+#### 5.1 State Storage in Kafka Streams
+
+**Stateful Operations:**
+- **Aggregations:** Counting, summing, averaging.
+- **Joins:** Merging streams or tables based on keys.
+- **Windowed Operations:** Aggregations over time windows.
+
+**State Stores:**
+- **Definition:** Local databases that store state required for stateful operations.
+- **Types:**
+  - **Persistent State Stores:** Stored on disk using **RocksDB**.
+  - **In-Memory State Stores:** Stored in memory for faster access.
+- **Changelog Topics:** Kafka Streams backs up state stores to changelog topics for fault tolerance.
+
+**Configuration:**
+- **State Directory:**
+  ```java
+  props.put(StreamsConfig.STATE_DIR_CONFIG, "/path/to/state/dir");
+  ```
+- **Changelog Topic Naming:** `<application-id>-<store-name>-changelog`.
+
+#### 5.2 Handling Service Instance Failures and Cluster Changes
+
+**Fault Tolerance:**
+- **Automatic Failover:** Tasks from failed instances are reassigned to other instances.
+- **State Restoration:** New instances restore state from changelog topics.
+- **Standby Replicas:** Optionally, maintain standby copies of state stores for faster recovery.
+
+**Rebalancing:**
+- **When Instances Join/Leave:** Kafka Streams triggers a rebalance to redistribute tasks.
+- **Impact:** Brief pause in processing during task reassignment and state restoration.
+
+#### 5.3 Impact on Windowing
+
+**Windowed Operations:**
+- **Purpose:** Group records into finite sets based on time intervals for aggregations.
+- **State Requirements:** Maintain state for each window to compute aggregates.
+
+**Window Stores:**
+- **Specialized State Stores:** Hold data for windowed aggregations.
+- **Retention and Cleanup:** Configure retention times and grace periods to manage state store size.
+
+#### 5.4 Use Cases for Stateful Streams
+
+- **Aggregations:** Counting events, summing values per key.
+- **Joins:** Enriching streams by joining with other streams or tables.
+- **Windowed Analytics:** Real-time metrics over specific time intervals.
+- **Pattern Detection:** Identifying sequences or anomalies in event streams.
+- **Sessionization:** Tracking user sessions based on activity gaps.
+- **Deduplication:** Removing duplicate records by tracking seen keys or values.
+
+### 9.6 Integrating Kafka Streams with Spring Boot
+
+**6.1 Code Organization**
+
+To maintain clean and maintainable code in complex applications, separate concerns by modularizing Kafka Streams components.
+
+**Separate Configuration:**
+```java
+@Configuration
+public class KafkaStreamsConfig {
+    @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
+    public StreamsConfig kStreamsConfigs() {
+        Properties props = new Properties();
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "my-microservice-app");
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "broker1:9092,broker2:9092");
+        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        return new StreamsConfig(props);
+    }
+}
+```
+
+**Define Topology Separately:**
+```java
+@Component
+public class MyTopology {
+    private final ProcessingService processingService;
+
+    public MyTopology(ProcessingService processingService) {
+        this.processingService = processingService;
+    }
+
+    @Bean
+    public KStream<String, String> kStream(StreamsBuilder builder) {
+        KStream<String, String> inputStream = builder.stream("input-topic");
+        KStream<String, String> processedStream = inputStream.mapValues(processingService::processValue);
+        processedStream.to("output-topic");
+        return processedStream;
+    }
+}
+```
+
+**Encapsulate Processing Logic:**
+```java
+@Service
+public class ProcessingService {
+    public String processValue(String value) {
+        // Complex business logic
+        return value.toUpperCase();
+    }
+}
+```
+
+**6.2 Application ID and Consumer Groups**
+
+- **Application ID:**
+  - Serves as the **consumer group ID**.
+  - Groups all Kafka Streams instances into the same logical application.
+
+- **Instance Coordination:**
+  - Instances coordinate via Kafka's group management protocol.
+  - **Task Assignment:** Managed by Kafka Streams, ensuring each partition is processed by only one instance.
+
+- **Scaling Limitations:**
+  - **Parallelism** is limited by the number of partitions.
+  - Adding more instances than partitions will leave some instances idle.
 
 ---
