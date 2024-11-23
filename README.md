@@ -1,1 +1,2 @@
- - [Kafka](https://github.com/therealdumbprogrammer/notes/blob/main/Kafka.MD)
+ - [Kafka](https://github.com/therealdumbprogrammer/notes/blob/main/kafka/Kafka.md)
+ - [Kafka Questions](https://github.com/therealdumbprogrammer/notes/blob/main/kafka/kafka-questions.md)
