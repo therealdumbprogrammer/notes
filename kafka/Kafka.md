@@ -179,7 +179,7 @@ In this unit, we focus on interacting with Apache Kafka using Java. You'll learn
       <dependency>
         <groupId>org.apache.kafka</groupId>
         <artifactId>kafka-clients</artifactId>
-        <version>3.5.1</version>
+        <version>${use-latest-version}</version>
       </dependency>
     </dependencies>
     ```
