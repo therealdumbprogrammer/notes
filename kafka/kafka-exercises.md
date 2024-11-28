@@ -3,7 +3,7 @@
 You have a Kafka topic named `user-signups`.  
 **Tasks:**  
 - **Producer:** Implement a producer that sends `UserSignup` events containing `userId`, `username`, and `signupTimestamp` to the `user-signups` topic.
-- **Consumer Group:** Implement a consumer group that listens to the `user-signups` topic and logs each received `UserSignup` event.
+- **Consumer:** Implement a consumer that listens to the `user-signups` topic and logs each received `UserSignup` event.
 
 **Hint:**
 Command to create the topic:
