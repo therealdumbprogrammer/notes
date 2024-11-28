@@ -8,6 +8,6 @@ You have a Kafka topic named `user-signups`.
 **Hint:**
 Command to create the topic:
 ```console
-./kafka-topics.sh --create --topic test01 --bootstrap-server localhost:9092
+./kafka-topics.sh --create --topic user-signups --bootstrap-server localhost:9092
 ```
 ---
