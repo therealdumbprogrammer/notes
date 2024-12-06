@@ -18,4 +18,4 @@ Your application needs to process messages from the `transactions` topic with hi
 **Tasks:**  
 - **Producer:** Send `Transaction` events to the `transactions` topic.
 - **Consumers:** Deploy three consumer instances in the same consumer group to consume from the `transactions` topic.
-- **Observation:** Verify that the messages are evenly distributed among the three consumers.
+- **Observation:** Verify that the messages are distributed among the three consumers.
