@@ -10,6 +10,8 @@
 8. [Question 8: How can you optimize Kafka performance for high-throughput, low-latency applications? Discuss configuration tuning, hardware considerations, and best practices.](#question-8-how-can-you-optimize-kafka-performance-for-high-throughput-low-latency-applications-discuss-configuration-tuning-hardware-considerations-and-best-practices)
 9. [Question 9: Describe how you would implement a data governance framework within a Kafka ecosystem. What tools and practices would you use to ensure data quality, lineage, and compliance?](#question-9-describe-how-you-would-implement-a-data-governance-framework-within-a-kafka-ecosystem-what-tools-and-practices-would-you-use-to-ensure-data-quality-lineage-and-compliance)
 10. [Question 10: How would you handle schema evolution in Kafka topics to ensure backward and forward compatibility? Discuss the role of Schema Registry and serialization formats.](#question-10-how-would-you-handle-schema-evolution-in-kafka-topics-to-ensure-backward-and-forward-compatibility-discuss-the-role-of-schema-registry-and-serialization-formats)
+11. [Question 11: Key Metrics to Track](#question-11-key-metrics-to-track)
+12. [Question 12: How to configure Kafka for low latency](#question-12-how-to-configure-kafka-for-low-latency)
 
 ---
 
@@ -2835,5 +2837,101 @@ A **Schema Registry** is a centralized repository that stores and manages schema
      curl http://localhost:8081/subjects/ecommerce-user-value/versions
      ```
    - **Handle Deprecations:** Gradually phase out deprecated fields by notifying consumers and planning for eventual removal in a compatible manner.
+
+---
+
+## Question 11: Key Metrics to Track
+
+### 1. **Consumer Lag Metrics**
+These metrics help measure the difference between what has been produced and consumed:
+- **`kafka.consumer.lag`**: Tracks the lag for each consumer group and partition.
+- **`kafka.consumer.lag.max`**: Maximum lag across all partitions for a given topic.
+- **`kafka.consumer.lag.sum`**: Total lag across all partitions for a consumer group.
+
+---
+
+### 2. **Offset Metrics**
+Used to calculate lag and track progress:
+- **`kafka.log.end.offset`**: Latest offset of each partition (producer's end).
+- **`kafka.consumer.offset`**: Latest committed offset for a consumer group and partition.
+
+---
+
+### 3. **Throughput Metrics**
+Metrics for consumption and production rates:
+- **`kafka.consumer.bytes.consumed.rate`**: Rate (bytes/sec) at which consumers process messages.
+- **`kafka.producer.bytes.sent.rate`**: Rate (bytes/sec) at which producers write messages.
+- **`kafka.consumer.records.consumed.rate`**: Number of records (messages) consumed per second.
+- **`kafka.producer.records.sent.rate`**: Number of records (messages) produced per second.
+
+---
+
+### 4. **Consumer Group Metrics**
+Metrics to monitor the health of consumer groups:
+- **`kafka.consumer.assigned.partitions`**: Number of partitions assigned to the consumer group.
+- **`kafka.consumer.rebalance.rate`**: Frequency of rebalancing events in a consumer group.
+
+---
+
+## Suggested Grafana Dashboard Visualizations
+1. **Lag per Partition**: Visualize individual partition lag to identify bottlenecks.
+2. **Total Lag per Topic**: View total lag across all partitions for a topic.
+3. **Throughput Rates**: Compare consumption and production rates side-by-side.
+4. **Alert Thresholds**: Highlight consumer groups or partitions with unacceptable lag.
+
+---
+
+## Alerts to Configure
+1. **High Consumer Lag**: Alert if `kafka.consumer.lag.max` exceeds a defined threshold.
+2. **Lag Increasing Over Time**: Detect if lag continues to grow, indicating consumers are falling behind.
+3. **Zero Consumption**: Alert if `kafka.consumer.records.consumed.rate` drops to zero, indicating possible consumer failure.
+
+---
+
+## Question 12: How to configure Kafka for low latency
+
+### 1. Producer Settings
+- Set **`acks=1`**: This ensures that only the leader broker acknowledges the message, reducing waiting time compared to `acks=all`.
+- Set **`linger.ms=0`**: Disables batching and sends messages immediately.
+- Configure compression:
+  - Disable compression using **`compression.type=none`** for maximum speed.
+  - Alternatively, use **LZ4** compression, which is optimized for low latency.
+
+**Why?** These settings reduce delays caused by waiting for acknowledgments, batching, or heavy compression overhead.
+
+---
+
+### 2. Broker Settings
+- Adjust the following configurations on the Kafka brokers:
+  - **`num.network.threads`**: Increase the number of threads that handle network requests to avoid bottlenecks during high traffic.
+  - **`num.io.threads`**: Increase the number of threads managing disk I/O for faster read/write operations.
+  - **`socket.send.buffer.bytes`**: Increase the size of the socket buffer to allow faster message transmission.
+
+**Tip:** Tune these values based on your hardware (CPU, memory, and disk capabilities) to maximize performance.
+
+---
+
+### 3. Consumer Settings
+- Configure the consumer for faster message retrieval:
+  - **`fetch.min.bytes`**: Increase this to fetch larger batches of messages, which reduces the number of requests but balances throughput and latency.
+  - **`fetch.max.wait.ms`**: Decrease this to minimize the time the consumer waits before fulfilling a fetch request.
+
+**Note:** Reducing `fetch.max.wait.ms` may increase CPU usage, but it helps in lowering latency for message retrieval.
+
+---
+
+### 4. Verification
+- Use tools to measure end-to-end latency, such as:
+  - Kafka's built-in performance benchmarking tools.
+  - **Apache JMeter** or custom scripts for load testing and latency measurement.
+- Simulate real-world scenarios under varying loads and compare the results with baseline measurements.
+- Ensure latency targets are consistently met in production-like conditions.
+
+---
+
+## Optional Enhancements
+- Test the impact of **SSL encryption** on latency and fine-tune configurations for secure environments.
+- Use **Kafka Streams** to measure processing latency alongside delivery latency.
+- Experiment with network setups (e.g., WAN vs. LAN) to evaluate the effect of network topology on performance.
 
 ---
