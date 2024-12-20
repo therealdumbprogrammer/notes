@@ -19,3 +19,13 @@ Your application needs to process messages from the `transactions` topic with hi
 - **Producer:** Send `Transaction` events to the `transactions` topic.
 - **Consumers:** Deploy three consumer instances in the same consumer group to consume from the `transactions` topic.
 - **Observation:** Verify that the messages are distributed among the three consumers.
+
+---
+
+### **Exercise 3: Kafka Partitioners**
+**Scenario:**  
+Your application needs to process messages from the `transactions` topic with high throughput.  
+**Tasks:**  
+- **Producer:** Send `Transaction` events to the `transactions` topic.
+- **Consumers:** Deploy three consumer instances in the same consumer group to consume from the `transactions` topic.
+- **Observation:** Verify how messages are distributed to different partitions according to different partitioning algorithms.
