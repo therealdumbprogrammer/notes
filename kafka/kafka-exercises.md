@@ -29,3 +29,17 @@ Your application needs to process messages from the `transactions` topic with hi
 - **Producer:** Send `Transaction` events to the `transactions` topic.
 - **Consumers:** Deploy three consumer instances in the same consumer group to consume from the `transactions` topic.
 - **Observation:** Verify how messages are distributed to different partitions according to different partitioning algorithms.
+
+---
+
+### **Exercise 4: Configuring and Using Kafka Transactional APIs**
+**Scenario:**  
+Ensure atomicity when producing messages to multiple topics.  
+**Tasks:**  
+- **Producer Configuration:**  
+  - Enable transactions by setting `transactional.id` in producer properties.
+- **Transactional Producer Implementation:**  
+  - Develop a producer that begins a transaction, sends messages to `topicA` and `topicB`, and commits the transaction.
+  - Handle exceptions by aborting transactions when necessary.
+- **Verification:**  
+  - Ensure that either all messages in the transaction are successfully committed or none are, maintaining atomicity across multiple topics
